@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ $# -le 1 ]; then
+    cat >&2 << EOF
+Usage: $0 <command> [args...]
+
+Commands:
+diff [args...]: runs p4 diff -du [args...] | colordiff
+EOF
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    "diff")
+        p4 diff -du $* | colordiff
+        ;;
+    *)
+        echo "$0: $cmd: unknown command"
+        ;;
+esac

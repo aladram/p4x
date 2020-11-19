@@ -17,6 +17,6 @@ case "$cmd" in
         p4 diff -du $* | colordiff
         ;;
     *)
-        echo "$0: $cmd: unknown command"
+        echo "$0: $cmd: unknown command" >&2
         ;;
 esac

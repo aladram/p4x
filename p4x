@@ -1,20 +1,48 @@
 #!/bin/sh
 
-if [ $# -le 1 ]; then
+p4x_get_user()
+{
+    p4 user -o | grep -v '^#' | grep 'User:' | cut -d"	" -f2
+}
+
+# Quit on error
+set -e
+
+if [ $# -le 0 ]; then
     cat >&2 << EOF
 Usage: $0 <command> [args...]
 
 Commands:
+changes [args...]: runs p4 changes -u <p4-user> [args...]
 diff [args...]: runs p4 diff -du [args...] | colordiff
+pending [args...]: runs p4 changes -u <p4-user> -s pending [args...]
+shelved [args...]: runs p4 changes -u <p4-user> -s shelved [args...]
 EOF
+    exit 0
 fi
 
 cmd="$1"
 shift
 
 case "$cmd" in
+    "changes")
+        P4USER="$(p4x_get_user)"
+        echo "> p4 changes -u $P4USER $*"
+        p4 changes -u $P4USER $*
+        ;;
     "diff")
+        echo "> p4 diff -du $* | colordiff"
         p4 diff -du $* | colordiff
+        ;;
+    "pending")
+        P4USER="$(p4x_get_user)"
+        echo "> p4 changes -u $P4USER -s pending $8"
+        p4 changes -u $P4USER -s pending $*
+        ;;
+    "shelved")
+        P4USER="$(p4x_get_user)"
+        echo "> p4 changes -u $P4USER -s shelved $*"
+        p4 changes -u $P4USER -s shelved $*
         ;;
     *)
         echo "$0: $cmd: unknown command" >&2

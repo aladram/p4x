@@ -17,6 +17,7 @@ changes [args...]: runs p4 changes -u <p4-user> [args...]
 diff [args...]: runs p4 diff -du [args...] | colordiff
 diffcl <cl-number>: runs p4 diff -du \$(p4 opened -c <cl-number> | cut -d# -f1) | colordiff
 pending [args...]: runs p4 changes -u <p4-user> -s pending [args...]
+reshelve <cl-number>: runs p4 shelve -dc <cl-number> && p4 shelve -c <cl-number>
 shelved [args...]: runs p4 changes -u <p4-user> -s shelved [args...]
 EOF
     exit 0
@@ -51,6 +52,16 @@ EOF
         P4USER="$(p4x_get_user)"
         echo "> p4 changes -u $P4USER -s pending $8"
         p4 changes -u $P4USER -s pending $*
+        ;;
+    "reshelve")
+        if [ $# -ne 1 ]; then
+            cat >&2 << EOF
+Usage: $0 $cmd <cl-number>
+EOF
+            exit 0
+        fi
+        echo "> p4 shelve -dc $1 && p4 shelve -c $1"
+        p4 shelve -dc $1 && p4 shelve -c $1
         ;;
     "shelved")
         P4USER="$(p4x_get_user)"

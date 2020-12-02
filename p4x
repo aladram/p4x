@@ -45,6 +45,7 @@ reshelve <cl-number>: runs p4 shelve -dc <cl-number> && p4 shelve -c <cl-number>
 shelved [args...]: runs p4 changes -u <p4-user> -s shelved [args...]
 submit <cl-number>: runs p4 shelve -dc <cl-number> && p4 submit -c <cl-number>
 submitted [args...]: runs p4 changes -u <p4-user> -s submitted [args...]
+tig <cl-number>: runs p4x diffcl <cl-number> | less -R
 EOF
     exit 0
 fi
@@ -89,6 +90,10 @@ case "$cmd" in
     "submitted")
         P4USER="$(p4x_get_user)"
         p4 changes -u $P4USER -s submitted $*
+        ;;
+    "tig")
+        p4x_usage 1 "<cl-number>" "$@"
+        p4x diffcl $1 | less -R
         ;;
     *)
         echo "$0: $cmd: unknown command" >&2

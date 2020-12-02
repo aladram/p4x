@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Wrapper on p4 that displays any command
 p4()
 {
     echo "> p4 $*" >&2
@@ -9,6 +10,23 @@ p4()
 p4x_get_user()
 {
     p4 user -o | grep -v '^#' | grep 'User:' | cut -d"	" -f2
+}
+
+p4x_usage()
+{
+    if [ $# -lt 2 ]; then
+        echo "p4x_usage requires at least 2 arguments: n_args and usage" >&2
+        exit 1
+    fi
+    n_args="$1"
+    usage="$2"
+    shift
+    shift
+
+    if [ $# -ne $n_args ]; then
+        echo "Usage: $0 $cmd $usage" >&2
+        exit 0
+    fi
 }
 
 # Quit on error
@@ -42,14 +60,13 @@ case "$cmd" in
         p4 diff -du $* | colordiff
         ;;
     "diffcl")
-        if [ $# -ne 1 ]; then
-            cat >&2 << EOF
-Usage: $0 $cmd <cl-number>
-EOF
-            exit 0
-        fi
+        p4x_usage 1 "<cl-number>" "$@"
         IFS='
 '
+        if [ "$(env p4 opened -c $1 2>&1)" = "File(s) not opened on this client." ]; then
+            echo "No opened file for the specified changelist on this client." >&2
+            exit 1
+        fi
         p4 diff -du $(p4 opened -c $1 | cut -d# -f1) | colordiff
         ;;
     "pending")
@@ -57,12 +74,7 @@ EOF
         p4 changes -u $P4USER -s pending $*
         ;;
     "reshelve")
-        if [ $# -ne 1 ]; then
-            cat >&2 << EOF
-Usage: $0 $cmd <cl-number>
-EOF
-            exit 0
-        fi
+        p4x_usage 1 "<cl-number>" "$@"
         p4 shelve -dc $1 && p4 shelve -c $1
         ;;
     "shelved")

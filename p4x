@@ -15,6 +15,7 @@ Usage: $0 <command> [args...]
 Commands:
 changes [args...]: runs p4 changes -u <p4-user> [args...]
 diff [args...]: runs p4 diff -du [args...] | colordiff
+diffcl <cl-number>: runs p4 diff -du \$(p4 opened -c <cl-number> | cut -d# -f1) | colordiff
 pending [args...]: runs p4 changes -u <p4-user> -s pending [args...]
 shelved [args...]: runs p4 changes -u <p4-user> -s shelved [args...]
 EOF
@@ -33,6 +34,18 @@ case "$cmd" in
     "diff")
         echo "> p4 diff -du $* | colordiff"
         p4 diff -du $* | colordiff
+        ;;
+    "diffcl")
+        if [ $# -ne 1 ]; then
+            cat >&2 << EOF
+Usage: $0 $cmd <cl-number>
+EOF
+            exit 0
+        fi
+        IFS='
+'
+        echo "> p4 diff -du $(p4 opened -c $1 | cut -d# -f1) | colordiff"
+        p4 diff -du $(p4 opened -c $1 | cut -d# -f1) | colordiff
         ;;
     "pending")
         P4USER="$(p4x_get_user)"

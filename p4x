@@ -43,6 +43,7 @@ diffcl <cl-number>: runs p4 diff -du \$(p4 opened -c <cl-number> | cut -d# -f1) 
 pending [args...]: runs p4 changes -u <p4-user> -s pending [args...]
 reshelve <cl-number>: runs p4 shelve -dc <cl-number> && p4 shelve -c <cl-number>
 shelved [args...]: runs p4 changes -u <p4-user> -s shelved [args...]
+submit <cl-number>: runs p4 shelve -dc <cl-number> && p4 submit -c <cl-number>
 submitted [args...]: runs p4 changes -u <p4-user> -s submitted [args...]
 EOF
     exit 0
@@ -80,6 +81,10 @@ case "$cmd" in
     "shelved")
         P4USER="$(p4x_get_user)"
         p4 changes -u $P4USER -s shelved $*
+        ;;
+    "submit")
+        p4x_usage 1 "<cl-number>" "$@"
+        p4 shelve -dc $1 && p4 submit -c $1
         ;;
     "submitted")
         P4USER="$(p4x_get_user)"

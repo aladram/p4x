@@ -3,7 +3,10 @@
 # Wrapper on p4 that displays any command
 p4()
 {
+    OLDIFS="$IFS"
+    IFS=' '
     echo "> p4 $*" >&2
+    IFS="$OLDIFS"
     env p4 "$@"
 }
 

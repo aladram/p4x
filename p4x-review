@@ -1,0 +1,54 @@
+#!/bin/bash
+
+. "${0::-6}"common
+
+if [ $# -le 0 ]; then
+    cat >&2 << EOF
+Usage: $0 <command> [args...]
+
+Commands:
+create <cl-number>: create review from local changelist
+download <review id> [base change]: downloads files associated with review
+EOF
+    exit 0
+fi
+
+
+cmd="$1"
+shift
+
+case "$cmd" in
+"create")
+    echo "Not implemented" >&2
+    exit 1
+    ;;
+"download")
+    review="$1"
+    basecl="$2"
+
+    if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+        echo Usage: $0 download '<review-id>' '[base change]' >&2
+        exit
+    fi
+
+    IFS='
+'
+    for rev in $(p4 describe -sS "$review" | grep '^\.\.\. //' | cut -d' ' -f2- | rev | cut -d' ' -f 2- | rev); do
+        f_p4="$(echo "$rev" | cut -d# -f1)"
+        f="${f_p4:2}"
+
+        mkdir -p {old,new}/"$(dirname "$f")"
+
+        p4 print -q "$f_p4@=$review" > "new/$f"
+        if [ -n "$basecl" ]; then
+            p4 print -q "$f_p4@$basecl" > "old/$f"
+        else
+            p4 print -q "$f_p4#head" > "old/$f"
+        fi
+    done
+    ;;
+*)
+    echo "$0: $cmd: unknown command" >&2
+    exit 1
+    ;;
+esac

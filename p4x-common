@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Quit on error
+set -e
+
+# Wrapper on p4 that displays any command
+p4()
+{
+    OLDIFS="$IFS"
+    IFS=' '
+    echo "> p4 $*" >&2
+    IFS="$OLDIFS"
+    env p4 "$@"
+}
+
+p4x_get_user()
+{
+    p4 user -o | grep -v '^#' | grep 'User:' | cut -d'	' -f2
+}
+
+p4x_usage()
+{
+    if [ $# -lt 2 ]; then
+        echo "p4x_usage requires at least 2 arguments: n_args and usage" >&2
+        exit 1
+    fi
+    n_args="$1"
+    usage="$2"
+    shift
+    shift
+
+    if [ $# -ne $n_args ]; then
+        echo "Usage: $0 $cmd $usage" >&2
+        exit 0
+    fi
+}

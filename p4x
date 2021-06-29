@@ -1,39 +1,6 @@
 #!/bin/sh
 
-# Wrapper on p4 that displays any command
-p4()
-{
-    OLDIFS="$IFS"
-    IFS=' '
-    echo "> p4 $*" >&2
-    IFS="$OLDIFS"
-    env p4 "$@"
-}
-
-p4x_get_user()
-{
-    p4 user -o | grep -v '^#' | grep 'User:' | cut -d"	" -f2
-}
-
-p4x_usage()
-{
-    if [ $# -lt 2 ]; then
-        echo "p4x_usage requires at least 2 arguments: n_args and usage" >&2
-        exit 1
-    fi
-    n_args="$1"
-    usage="$2"
-    shift
-    shift
-
-    if [ $# -ne $n_args ]; then
-        echo "Usage: $0 $cmd $usage" >&2
-        exit 0
-    fi
-}
-
-# Quit on error
-set -e
+. "$0"-common
 
 if [ $# -le 0 ]; then
     cat >&2 << EOF
@@ -53,6 +20,7 @@ EOF
     exit 0
 fi
 
+script_path="$0"
 cmd="$1"
 shift
 
@@ -82,6 +50,9 @@ case "$cmd" in
         p4x_usage 1 "<cl-number>" "$@"
         p4 shelve -dc $1 && p4 shelve -c $1
         ;;
+    "review")
+        exec "$script_path"-review "$@"
+        ;;
     "shelved")
         P4USER="$(p4x_get_user)"
         p4 changes -u $P4USER -s shelved $*
@@ -100,5 +71,6 @@ case "$cmd" in
         ;;
     *)
         echo "$0: $cmd: unknown command" >&2
+        exit 1
         ;;
 esac

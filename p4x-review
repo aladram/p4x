@@ -39,11 +39,11 @@ case "$cmd" in
 
         mkdir -p {old,new}/"$(dirname "$f")"
 
-        p4 print -q "$f_p4@=$review" > "new/$f"
+        p4 print -q -o "new/$f" "$f_p4@=$review"
         if [ -n "$basecl" ]; then
-            p4 print -q "$f_p4@$basecl" > "old/$f"
+            p4 print -q -o "old/$f" "$f_p4@$basecl"
         else
-            p4 print -q "$f_p4#head" > "old/$f"
+            p4 print -q -o "old/$f" "$f_p4#head"
         fi
     done
     ;;

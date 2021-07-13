@@ -25,6 +25,9 @@ cmd="$1"
 shift
 
 case "$cmd" in
+    "bisect")
+        exec "$script_path"-bisect "$@"
+        ;;
     "changes")
         P4USER="$(p4x_get_user)"
         p4 changes -u $P4USER $*

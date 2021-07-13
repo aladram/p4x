@@ -1,0 +1,64 @@
+#!/bin/sh
+
+. "$(dirname "$0")"/p4x-common
+
+if [ $# -ne 3 ]; then
+    cat >&2 << EOF
+Usage: $0 <cl-start> <cl-end> <validation-script>
+Bisects through Perforce changelists to find the last valid one and the first
+invalid one. p4 sync is done in the current directory. The current directory
+will be left either at the last valid or first invalid revision.
+
+<cl-start> must be a valid CL number, and <validation-script> <cl-start> must
+return 0. <cl-end> must be a valid CL number, and <validation-script> <cl-end>
+must return a non-null value.
+EOF
+    exit 1
+fi
+
+cl_start="$1"
+cl_end="$2"
+validation_script="$3"
+
+list_changes()
+(
+    if [ $# -ne 2 ]; then
+        echo 'Error: list_changes takes 2 params: <cl-start> and <cl-end>' >&2
+        exit 1
+    fi
+
+    cl_start=$1
+    cl_end=$2
+    changes=
+    for change in $(p4 changes -re $cl_start ./... | cut -d' ' -f2); do
+        if [ $change -le $cl_end ]; then
+            changes="$changes $change"
+        else
+            break
+        fi
+    done
+
+    echo $changes
+)
+
+while true; do
+    changes="$(list_changes $cl_start $cl_end)"
+    count=$(echo $changes | wc -w)
+    if [ $count -le 2 ]; then
+        echo Last valid CL is $cl_start and first invalid CL is $cl_end.
+        echo To restore latest changes locally, run: p4 sync ./...#head
+        exit 0
+    fi
+
+    echo $count changes remaining
+
+    change=$(echo $changes | cut -d' ' -f$((count / 2 + 1)))
+    p4 sync -q ./...@$change
+    if "$validation_script"; then
+        echo $change is valid
+        cl_start=$change
+    else
+        echo $change is invalid
+        cl_end=$change
+    fi
+done

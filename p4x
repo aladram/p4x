@@ -15,7 +15,7 @@ reshelve <cl-number>: runs p4 shelve -dc <cl-number> && p4 shelve -c <cl-number>
 shelved [args...]: runs p4 changes -u <p4-user> -s shelved [args...]
 submit <cl-number>: runs p4 shelve -dc <cl-number> && p4 submit -c <cl-number>
 submitted [args...]: runs p4 changes -u <p4-user> -s submitted [args...]
-tig <cl-number>: runs p4x diffcl <cl-number> | less -R
+tig [cl-number]: runs p4x diff ./... | less -R or p4x diffcl <cl-number> | less -R
 EOF
     exit 0
 fi
@@ -69,8 +69,12 @@ case "$cmd" in
         p4 changes -u $P4USER -s submitted $*
         ;;
     "tig")
-        p4x_usage 1 "<cl-number>" "$@"
-        p4x diffcl $1 | less -R
+        if [ $# -eq 0 ]; then
+            p4x diff ./... | less -R
+        else
+            p4x_usage 1 "<cl-number>" "$@"
+            p4x diffcl $1 | less -R
+        fi
         ;;
     *)
         echo "$0: $cmd: unknown command" >&2

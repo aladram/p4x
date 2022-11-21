@@ -30,10 +30,10 @@ case "$cmd" in
         ;;
     "changes")
         P4USER="$(p4x_get_user)"
-        p4 changes -u $P4USER $*
+        p4 changes -u $P4USER "$@"
         ;;
     "diff")
-        p4 diff -du $* | colordiff
+        p4 diff -du "$@" | colordiff
         ;;
     "diffcl")
         p4x_usage 1 "<cl-number>" "$@"
@@ -47,7 +47,7 @@ case "$cmd" in
         ;;
     "pending")
         P4USER="$(p4x_get_user)"
-        p4 changes -u $P4USER -s pending $*
+        p4 changes -u $P4USER -s pending "$@"
         ;;
     "reshelve")
         p4x_usage 1 "<cl-number>" "$@"
@@ -58,7 +58,7 @@ case "$cmd" in
         ;;
     "shelved")
         P4USER="$(p4x_get_user)"
-        p4 changes -u $P4USER -s shelved $*
+        p4 changes -u $P4USER -s shelved "$@"
         ;;
     "submit")
         p4x_usage 1 "<cl-number>" "$@"
@@ -66,7 +66,7 @@ case "$cmd" in
         ;;
     "submitted")
         P4USER="$(p4x_get_user)"
-        p4 changes -u $P4USER -s submitted $*
+        p4 changes -u $P4USER -s submitted "$@"
         ;;
     "tig")
         if [ $# -eq 0 ]; then
